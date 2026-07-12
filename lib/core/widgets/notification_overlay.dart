@@ -9,7 +9,7 @@ import 'package:intl/intl.dart';
 class NotificationOverlay extends StatefulWidget {
   final Widget child;
 
-  const NotificationOverlay({Key? key, required this.child}) : super(key: key);
+  const NotificationOverlay({super.key, required this.child});
 
   @override
   State<NotificationOverlay> createState() => _NotificationOverlayState();

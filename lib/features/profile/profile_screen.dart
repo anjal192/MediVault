@@ -5,7 +5,7 @@ import '../../core/widgets/glass_card.dart';
 import '../../core/services/repository.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +50,7 @@ class ProfileScreen extends StatelessWidget {
                 
                 const SizedBox(height: 16),
                 _buildSettingsHeader("App Preferences"),
-                _buildSettingsTile(context, Icons.volume_up, "Voice Reminder (TTS) Settings", "Speech volume, pitch, speed", "/reminders"),
+                _buildSettingsTile(context, Icons.volume_up, "Voice Reminder (TTS) Settings", "Speech volume, pitch, speed", "/voice-settings"),
                 _buildSettingsTile(context, Icons.translate, "App Language", "English (US)", null, trailingText: "English"),
                 _buildSettingsTile(context, Icons.notifications_active_outlined, "Notification Settings", "Low stock & daily reminder alerts", null, hasSwitch: true),
                 
@@ -228,7 +228,7 @@ class ProfileScreen extends StatelessWidget {
                   bool notifActive = true;
                   return Switch(
                     value: notifActive,
-                    activeColor: AppTheme.primaryGreen,
+                    activeThumbColor: AppTheme.primaryGreen,
                     onChanged: (val) {
                       setSwitchState(() => notifActive = val);
                     },

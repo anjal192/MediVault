@@ -7,7 +7,7 @@ import '../ai/ai_health_assistant_screen.dart';
 import '../profile/profile_screen.dart';
 
 class MainHubScreen extends StatefulWidget {
-  const MainHubScreen({Key? key}) : super(key: key);
+  const MainHubScreen({super.key});
 
   @override
   State<MainHubScreen> createState() => _MainHubScreenState();

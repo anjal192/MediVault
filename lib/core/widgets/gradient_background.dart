@@ -15,10 +15,10 @@ class GradientBackground extends StatelessWidget {
   final BackgroundStyle style;
 
   const GradientBackground({
-    Key? key,
+    super.key,
     required this.child,
     this.style = BackgroundStyle.glowingOrbs,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -98,8 +98,8 @@ class BackgroundPainter extends CustomPainter {
     // Large top-left orb
     paint.shader = RadialGradient(
       colors: [primary, Colors.transparent],
-    ).createShader(Rect.fromCircle(center: Offset(0, 0), radius: size.width * 0.7));
-    canvas.drawCircle(Offset(0, 0), size.width * 0.7, paint);
+    ).createShader(Rect.fromCircle(center: const Offset(0, 0), radius: size.width * 0.7));
+    canvas.drawCircle(const Offset(0, 0), size.width * 0.7, paint);
 
     // Large bottom-right orb
     paint.shader = RadialGradient(
@@ -117,10 +117,10 @@ class BackgroundPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     // Draw grid of subtle medical crosses in upper-right
-    final double step = 60.0;
-    final double crossSize = 12.0;
+    const double step = 60.0;
+    const double crossSize = 12.0;
     final double startX = size.width - 200;
-    final double startY = 100.0;
+    const double startY = 100.0;
 
     for (int i = 0; i < 3; i++) {
       for (int j = 0; j < 3; j++) {

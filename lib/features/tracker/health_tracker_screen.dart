@@ -8,7 +8,7 @@ import '../../core/constants/mock_data.dart';
 import 'package:intl/intl.dart';
 
 class HealthTrackerScreen extends StatefulWidget {
-  const HealthTrackerScreen({Key? key}) : super(key: key);
+  const HealthTrackerScreen({super.key});
 
   @override
   State<HealthTrackerScreen> createState() => _HealthTrackerScreenState();
@@ -85,8 +85,8 @@ class _HealthTrackerScreenState extends State<HealthTrackerScreen> {
 
                 // 4. Log Cards
                 if (historyList.isEmpty)
-                  GlassCard(
-                    child: const Center(child: Text("No records logged for this metric yet.")),
+                  const GlassCard(
+                    child: Center(child: Text("No records logged for this metric yet.")),
                   )
                 else
                   ...historyList.map((log) => _buildHistoryItemCard(log)),
@@ -315,7 +315,7 @@ class _HealthTrackerScreenState extends State<HealthTrackerScreen> {
                       ),
                       const Divider(height: 24),
                       DropdownButtonFormField<String>(
-                        value: sheetType,
+                        initialValue: sheetType,
                         decoration: const InputDecoration(
                           labelText: 'Select Vital Metric',
                           border: OutlineInputBorder(),

@@ -7,7 +7,7 @@ import '../../core/constants/mock_data.dart';
 import 'package:intl/intl.dart';
 
 class AIHealthAssistantScreen extends StatefulWidget {
-  const AIHealthAssistantScreen({Key? key}) : super(key: key);
+  const AIHealthAssistantScreen({super.key});
 
   @override
   State<AIHealthAssistantScreen> createState() => _AIHealthAssistantScreenState();

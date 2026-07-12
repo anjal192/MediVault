@@ -5,7 +5,7 @@ import '../../core/widgets/glass_card.dart';
 import '../../core/services/repository.dart';
 
 class PersonalHealthRecordScreen extends StatelessWidget {
-  const PersonalHealthRecordScreen({Key? key}) : super(key: key);
+  const PersonalHealthRecordScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

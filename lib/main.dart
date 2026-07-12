@@ -15,6 +15,9 @@ import 'features/health_record/prescription_vault_screen.dart';
 import 'features/health_record/emergency_health_card_screen.dart';
 import 'features/tracker/health_tracker_screen.dart';
 import 'features/profile/profile_screen.dart';
+import 'features/caregiver/caregiver_dashboard_screen.dart';
+import 'features/emergency/emergency_sos_screen.dart';
+import 'features/voice/voice_reminder_settings_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,7 +25,7 @@ void main() {
 }
 
 class MediVaultApp extends StatelessWidget {
-  const MediVaultApp({Key? key}) : super(key: key);
+  const MediVaultApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +65,15 @@ class MediVaultApp extends StatelessWidget {
         '/emergency-card': (context) => const NotificationOverlay(child: EmergencyHealthCardScreen()),
         '/tracker': (context) => const NotificationOverlay(child: HealthTrackerScreen()),
         '/profile': (context) => const NotificationOverlay(child: ProfileScreen()),
+        
+        // Caregiver Features
+        '/caregiver-dashboard': (context) => const NotificationOverlay(child: CaregiverDashboardScreen()),
+        
+        // Emergency Features
+        '/emergency-sos': (context) => const NotificationOverlay(child: EmergencySOSScreen()),
+
+        // Voice Features
+        '/voice-settings': (context) => const NotificationOverlay(child: VoiceReminderSettingsScreen()),
       },
     );
   }

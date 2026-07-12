@@ -8,7 +8,7 @@ import '../../core/constants/mock_data.dart';
 import 'package:intl/intl.dart';
 
 class MedicineInventoryScreen extends StatefulWidget {
-  const MedicineInventoryScreen({Key? key}) : super(key: key);
+  const MedicineInventoryScreen({super.key});
 
   @override
   State<MedicineInventoryScreen> createState() => _MedicineInventoryScreenState();
@@ -61,7 +61,6 @@ class _MedicineInventoryScreenState extends State<MedicineInventoryScreen> with 
           final lowStock = meds.where((m) => m.stockStatus != 'Green' && !m.isCompleted && !m.isExpired).toList();
           final expired = meds.where((m) => m.isExpired).toList();
           final completed = meds.where((m) => m.isCompleted).toList();
-          final healthy = meds.where((m) => m.stockStatus == 'Green' && !m.isExpired).toList();
 
           return GradientBackground(
             style: BackgroundStyle.pillPattern,

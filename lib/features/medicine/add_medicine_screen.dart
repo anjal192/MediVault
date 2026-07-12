@@ -7,7 +7,7 @@ import '../../core/constants/mock_data.dart';
 import 'package:intl/intl.dart';
 
 class AddMedicineScreen extends StatefulWidget {
-  const AddMedicineScreen({Key? key}) : super(key: key);
+  const AddMedicineScreen({super.key});
 
   @override
   State<AddMedicineScreen> createState() => _AddMedicineScreenState();
@@ -143,7 +143,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              value: _selectedIcon,
+                              initialValue: _selectedIcon,
                               decoration: const InputDecoration(
                                 labelText: 'Type Icon',
                                 border: OutlineInputBorder(),
@@ -182,7 +182,7 @@ class _AddMedicineScreenState extends State<AddMedicineScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              value: _frequency,
+                              initialValue: _frequency,
                               decoration: const InputDecoration(
                                 labelText: 'Frequency',
                                 border: OutlineInputBorder(),

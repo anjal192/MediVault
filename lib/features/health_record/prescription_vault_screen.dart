@@ -5,7 +5,7 @@ import '../../core/widgets/glass_card.dart';
 import '../../core/services/repository.dart';
 
 class PrescriptionVaultScreen extends StatelessWidget {
-  const PrescriptionVaultScreen({Key? key}) : super(key: key);
+  const PrescriptionVaultScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,11 +24,11 @@ class PrescriptionVaultScreen extends StatelessWidget {
       body: GradientBackground(
         style: BackgroundStyle.aiStars,
         child: prescriptions.isEmpty
-            ? Center(
+            ? const Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: EdgeInsets.all(24.0),
                   child: GlassCard(
-                    child: const Text(
+                    child: Text(
                       "No digital prescriptions archived. Tap 'Scan' to simplify and save one.",
                       textAlign: TextAlign.center,
                     ),

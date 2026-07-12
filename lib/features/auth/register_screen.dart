@@ -4,7 +4,7 @@ import '../../core/widgets/gradient_background.dart';
 import '../../core/widgets/glass_card.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -187,7 +187,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
-          value: _selectedBloodGroup,
+          initialValue: _selectedBloodGroup,
           decoration: const InputDecoration(
             labelText: 'Blood Group',
             prefixIcon: Icon(Icons.bloodtype_outlined),

@@ -8,7 +8,7 @@ import '../../core/constants/mock_data.dart';
 import 'package:intl/intl.dart';
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  const DashboardScreen({super.key});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -27,7 +27,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
       body: ListenableBuilder(
@@ -92,14 +91,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
+        const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               "Hello John,",
               style: TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w500),
             ),
-            const Text(
+            Text(
               "MediVault Dashboard",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
@@ -232,8 +231,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Widget _buildTodayMedicinesList(List<Medicine> meds) {
     if (meds.isEmpty) {
-      return GlassCard(
-        child: const Center(
+      return const GlassCard(
+        child: Center(
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 20),
             child: Text("No medications scheduled for today."),
@@ -403,7 +402,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _ActionItem(Icons.history_edu_rounded, "Health Record", "/health-record", Colors.purple),
       _ActionItem(Icons.folder_shared_outlined, "Vault Files", "/vault", Colors.teal),
       _ActionItem(Icons.monitor_heart_outlined, "Tracker Vitals", "/tracker", Colors.pink),
-      _ActionItem(Icons.contact_emergency, "Emergency Card", "/emergency-card", AppTheme.statusRed, isGlowing: true),
+      _ActionItem(Icons.supervisor_account_outlined, "Caregiver", "/caregiver-dashboard", Colors.deepPurple),
+      _ActionItem(Icons.contact_emergency, "Emergency Card", "/emergency-card", AppTheme.statusRed, isGlowing: false),
+      _ActionItem(Icons.emergency_share_rounded, "SOS Alert", "/emergency-sos", AppTheme.statusRed, isGlowing: true),
     ];
 
     return GridView.builder(

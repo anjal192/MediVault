@@ -7,7 +7,7 @@ import '../../core/services/voice_service.dart';
 import '../../core/constants/mock_data.dart';
 
 class MedicineReminderScreen extends StatefulWidget {
-  const MedicineReminderScreen({Key? key}) : super(key: key);
+  const MedicineReminderScreen({super.key});
 
   @override
   State<MedicineReminderScreen> createState() => _MedicineReminderScreenState();
@@ -57,8 +57,8 @@ class _MedicineReminderScreenState extends State<MedicineReminderScreen> {
 
                 // 2. Schedule list
                 if (todayMeds.isEmpty)
-                  GlassCard(
-                    child: const Center(
+                  const GlassCard(
+                    child: Center(
                       child: Padding(
                         padding: EdgeInsets.symmetric(vertical: 30),
                         child: Text("All clean! No scheduled medicines remaining today."),
@@ -87,13 +87,23 @@ class _MedicineReminderScreenState extends State<MedicineReminderScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.volume_up, color: AppTheme.primaryGreen),
-                  SizedBox(width: 8),
-                  Text(
+                  const Icon(Icons.volume_up, color: AppTheme.primaryGreen),
+                  const SizedBox(width: 8),
+                  const Text(
                     "Voice Settings (TTS)",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  const SizedBox(width: 4),
+                  IconButton(
+                    icon: const Icon(Icons.settings_outlined, color: AppTheme.primaryGreen, size: 18),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    tooltip: "Advanced Voice Settings",
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/voice-settings');
+                    },
                   ),
                 ],
               ),
@@ -103,7 +113,7 @@ class _MedicineReminderScreenState extends State<MedicineReminderScreen> {
                   const Text("Repeat (5m)", style: TextStyle(fontSize: 10, color: Colors.grey)),
                   Switch(
                     value: _repeatReminders,
-                    activeColor: AppTheme.primaryGreen,
+                    activeThumbColor: AppTheme.primaryGreen,
                     onChanged: (val) {
                       setState(() => _repeatReminders = val);
                     },

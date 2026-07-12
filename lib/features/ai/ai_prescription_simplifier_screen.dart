@@ -6,7 +6,7 @@ import '../../core/services/repository.dart';
 import '../../core/constants/mock_data.dart';
 
 class AIPrescriptionSimplifierScreen extends StatefulWidget {
-  const AIPrescriptionSimplifierScreen({Key? key}) : super(key: key);
+  const AIPrescriptionSimplifierScreen({super.key});
 
   @override
   State<AIPrescriptionSimplifierScreen> createState() => _AIPrescriptionSimplifierScreenState();
@@ -274,9 +274,9 @@ class _AIPrescriptionSimplifierScreenState extends State<AIPrescriptionSimplifie
   }
 
   Widget _buildAnalyzingState() {
-    return GlassCard(
-      margin: const EdgeInsets.only(top: 16),
-      child: const Center(
+    return const GlassCard(
+      margin: EdgeInsets.only(top: 16),
+      child: Center(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 24),
           child: Column(
