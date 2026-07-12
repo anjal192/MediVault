@@ -43,7 +43,14 @@ class _AIHealthAssistantScreenState extends State<AIHealthAssistantScreen> {
 
   void _onRepositoryUpdated() {
     if (mounted) {
-      setState(() {});
+      // Stop typing indicator once AI response arrives
+      if (_isTyping && _repository.chatHistory.length >= _waitingForMessageCount) {
+        setState(() {
+          _isTyping = false;
+        });
+      } else {
+        setState(() {});
+      }
       WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
     }
   }
@@ -60,24 +67,23 @@ class _AIHealthAssistantScreenState extends State<AIHealthAssistantScreen> {
 
   void _sendMessage([String? text]) {
     final msg = text ?? _textController.text.trim();
-    if (msg.isNotEmpty) {
+    if (msg.isNotEmpty && !_isTyping) {
       if (text == null) _textController.clear();
       
       setState(() {
         _isTyping = true;
       });
+      
+      final prevCount = _repository.chatHistory.length;
       _repository.sendChatMessage(msg);
       
-      // Simulate typing indicator timeout matching repo delay
-      Future.delayed(const Duration(milliseconds: 1000), () {
-        if (mounted) {
-          setState(() {
-            _isTyping = false;
-          });
-        }
-      });
+      // Poll until the AI response appears (repository notifies via ChangeNotifier)
+      // _onRepositoryUpdated will fire and we track by message count
+      _waitingForMessageCount = prevCount + 2; // user msg + AI response
     }
   }
+
+  int _waitingForMessageCount = 0;
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/notification_overlay.dart';
 import 'features/auth/splash_screen.dart';
@@ -16,10 +17,17 @@ import 'features/health_record/emergency_health_card_screen.dart';
 import 'features/tracker/health_tracker_screen.dart';
 import 'features/profile/profile_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    // Firebase not configured yet — app runs in local-only mode
+    debugPrint("Firebase init skipped: $e");
+  }
   runApp(const MediVaultApp());
 }
+
 
 class MediVaultApp extends StatelessWidget {
   const MediVaultApp({Key? key}) : super(key: key);

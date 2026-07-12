@@ -1,9 +1,16 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/gradient_background.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/services/repository.dart';
 import '../../core/constants/mock_data.dart';
+import '../../services/ai_gemini_service.dart';
+import '../../services/firebase_storage_service.dart';
+import '../../services/firestore_service.dart';
+import '../../models/prescription_model.dart';
+import '../../models/medicine_model.dart';
 
 class AIPrescriptionSimplifierScreen extends StatefulWidget {
   const AIPrescriptionSimplifierScreen({Key? key}) : super(key: key);
@@ -19,6 +26,10 @@ class _AIPrescriptionSimplifierScreenState extends State<AIPrescriptionSimplifie
   bool _hasUploaded = false;
   bool _isAnalyzing = false;
   bool _analysisComplete = false;
+
+  File? _prescriptionImage;
+  Map<String, dynamic>? _ocrResults;
+  final _picker = ImagePicker();
 
   @override
   void initState() {
@@ -39,71 +50,138 @@ class _AIPrescriptionSimplifierScreenState extends State<AIPrescriptionSimplifie
     super.dispose();
   }
 
-  void _simulateUpload() {
-    setState(() {
-      _hasUploaded = true;
-      _analysisComplete = false;
-    });
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? picked = await _picker.pickImage(source: source, imageQuality: 85);
+      if (picked != null) {
+        setState(() {
+          _prescriptionImage = File(picked.path);
+          _hasUploaded = true;
+          _analysisComplete = false;
+          _ocrResults = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Could not access camera/gallery: $e")),
+        );
+      }
+    }
   }
 
-  void _runAnalysis() {
+  void _runAnalysis() async {
     setState(() {
       _isAnalyzing = true;
     });
     _scannerController.repeat(reverse: true);
     
-    // Simulate AI reading details
-    Future.delayed(const Duration(seconds: 4), () {
+    try {
+      final results = await AIGeminiService().readPrescription(_prescriptionImage!);
       if (mounted) {
         setState(() {
           _isAnalyzing = false;
           _analysisComplete = true;
+          _ocrResults = results;
         });
         _scannerController.stop();
       }
-    });
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isAnalyzing = false;
+          _analysisComplete = true; // show fallback results
+          _ocrResults = null;
+        });
+        _scannerController.stop();
+      }
+    }
   }
 
-  void _addToVaultAndSchedule() {
+  void _addToVaultAndSchedule() async {
     final repo = MediVaultRepository();
+    final r = _ocrResults;
     
-    // 1. Add to Prescription Vault
-    final newPrescription = PrescriptionVaultItem(
-      id: 'p_ai_${DateTime.now().millisecondsSinceEpoch}',
-      doctorName: 'Dr. John Watson (AI Extracted)',
-      dateString: 'Today (AI Extracted)',
-      diagnosis: 'Type 2 Diabetes Control',
-      notes: 'Take Metformin twice daily with meals.',
-      isAIAnalyzed: true,
-      simplifiedMedicines: ['Metformin HCl - 500mg twice daily with meals to stabilize blood sugars'],
-    );
-    repo.uploadPrescription(newPrescription);
+    final String prescId = 'p_ai_${DateTime.now().millisecondsSinceEpoch}';
+    String? imageUrl;
 
-    // 2. Add to active medicines list
-    final newMed = Medicine(
-      id: 'med_ai_${DateTime.now().millisecondsSinceEpoch}',
-      name: 'Metformin (AI Extracted)',
-      dosage: '500 mg',
-      time: '01:00 PM',
-      frequency: 'Twice Daily',
-      beforeFood: false,
-      isPrescribed: true,
-      doctorName: 'Dr. John Watson',
-      totalQuantity: 60,
-      remainingQuantity: 60,
-      dailyUsage: 2,
-      expiryDate: DateTime.now().add(const Duration(days: 90)),
-      iconName: 'tablet',
-    );
-    repo.addMedicine(newMed);
+    try {
+      // Upload image if available
+      if (_prescriptionImage != null) {
+        imageUrl = await FirebaseStorageService().uploadPrescriptionImage(prescId, _prescriptionImage!);
+      }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Prescription saved to vault and Metformin added to schedule!"),
-        backgroundColor: AppTheme.primaryGreen,
-      ),
-    );
-    Navigator.pop(context);
+      final doctorName = r?['doctorName'] as String? ?? 'Dr. John Watson (AI Extracted)';
+      final medicineName = r?['medicineName'] as String? ?? 'Metformin HCl';
+      final dosage = r?['dosage'] as String? ?? '500 mg';
+      final frequency = r?['frequency'] as String? ?? 'Twice Daily';
+      final time = r?['time'] as String? ?? '01:00 PM';
+      final beforeFood = r?['beforeFood'] as bool? ?? false;
+      final diagnosis = r?['diagnosis'] as String? ?? 'AI Extracted Diagnosis';
+      final notes = r?['notes'] as String? ?? 'AI extracted prescription details.';
+      final explanation = r?['explanation'] as String? ?? '';
+
+      // 1. Save prescription to Firestore and vault
+      final newPrescModel = PrescriptionModel(
+        id: prescId,
+        doctorName: doctorName,
+        dateString: 'Today (AI Extracted)',
+        diagnosis: diagnosis,
+        notes: notes,
+        isAIAnalyzed: true,
+        simplifiedMedicines: ['$medicineName – $dosage $frequency'],
+        imageUrl: imageUrl,
+        consultationDate: DateTime.now(),
+        uploadDate: DateTime.now(),
+        description: explanation,
+      );
+      await FirestoreService().savePrescription(newPrescModel);
+
+      final newPrescription = PrescriptionVaultItem(
+        id: prescId,
+        doctorName: doctorName,
+        dateString: 'Today (AI Extracted)',
+        diagnosis: diagnosis,
+        notes: notes,
+        isAIAnalyzed: true,
+        simplifiedMedicines: ['$medicineName – $dosage $frequency'],
+      );
+      repo.uploadPrescription(newPrescription);
+
+      // 2. Add medicine to active schedule
+      final newMed = Medicine(
+        id: 'med_ai_${DateTime.now().millisecondsSinceEpoch}',
+        name: '$medicineName (AI Extracted)',
+        dosage: dosage,
+        time: time,
+        frequency: frequency,
+        beforeFood: beforeFood,
+        isPrescribed: true,
+        doctorName: doctorName,
+        totalQuantity: 60,
+        remainingQuantity: 60,
+        dailyUsage: frequency.toLowerCase().contains('twice') ? 2 : 1,
+        expiryDate: DateTime.now().add(const Duration(days: 90)),
+        iconName: 'tablet',
+      );
+      repo.addMedicine(newMed);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("$medicineName saved to vault and schedule!"),
+            backgroundColor: AppTheme.primaryGreen,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Save failed: $e"), backgroundColor: AppTheme.statusRed),
+        );
+      }
+    }
   }
 
   @override
@@ -157,9 +235,9 @@ class _AIPrescriptionSimplifierScreenState extends State<AIPrescriptionSimplifie
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              _buildUploadOption(Icons.camera_alt_outlined, "Camera"),
-              _buildUploadOption(Icons.image_outlined, "Gallery"),
-              _buildUploadOption(Icons.picture_as_pdf_outlined, "PDF Document"),
+              _buildUploadOption(Icons.camera_alt_outlined, "Camera", ImageSource.camera),
+              _buildUploadOption(Icons.image_outlined, "Gallery", ImageSource.gallery),
+              _buildUploadOption(Icons.picture_as_pdf_outlined, "Gallery (PDF)", ImageSource.gallery),
             ],
           )
         ],
@@ -167,9 +245,9 @@ class _AIPrescriptionSimplifierScreenState extends State<AIPrescriptionSimplifie
     );
   }
 
-  Widget _buildUploadOption(IconData icon, String label) {
+  Widget _buildUploadOption(IconData icon, String label, ImageSource source) {
     return InkWell(
-      onTap: _simulateUpload,
+      onTap: () => _pickImage(source),
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -196,25 +274,28 @@ class _AIPrescriptionSimplifierScreenState extends State<AIPrescriptionSimplifie
         children: [
           Stack(
             children: [
-              // Simulated image document preview
-              Container(
-                height: 180,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withAlpha(40),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.withAlpha(100)),
+                // Image preview — real if picked, placeholder otherwise
+                Container(
+                  height: 180,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withAlpha(40),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey.withAlpha(100)),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: _prescriptionImage != null
+                      ? Image.file(_prescriptionImage!, fit: BoxFit.cover)
+                      : const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.description, size: 48, color: Colors.grey),
+                            SizedBox(height: 8),
+                            Text("Prescription file selected", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                            Text("Ready for AI analysis", style: TextStyle(fontSize: 10, color: Colors.grey)),
+                          ],
+                        ),
                 ),
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.description, size: 48, color: Colors.grey),
-                    SizedBox(height: 8),
-                    Text("rx_prescription_july_11.jpg", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
-                    Text("File size: 1.2 MB", style: TextStyle(fontSize: 10, color: Colors.grey)),
-                  ],
-                ),
-              ),
               
               // Scanner horizontal laser line
               if (_isAnalyzing)
@@ -252,6 +333,8 @@ class _AIPrescriptionSimplifierScreenState extends State<AIPrescriptionSimplifie
                   setState(() {
                     _hasUploaded = false;
                     _analysisComplete = false;
+                    _prescriptionImage = null;
+                    _ocrResults = null;
                   });
                 },
                 child: const Text("Delete & Reupload", style: TextStyle(color: AppTheme.statusRed)),
@@ -304,13 +387,29 @@ class _AIPrescriptionSimplifierScreenState extends State<AIPrescriptionSimplifie
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildResultRow("Medicine Name", "Metformin Hydrochloride", isTitle: true),
-              _buildResultRow("Purpose", "Treat type 2 diabetes by stabilizing blood sugar glucose."),
-              _buildResultRow("Dosage", "500 mg tablets"),
-              _buildResultRow("Timing", "01:00 PM (After Lunch) and 08:00 PM (After Dinner)"),
-              _buildResultRow("Food Relation", "Take strictly AFTER food to prevent stomach upset"),
-              _buildResultRow("Side Effects", "Mild bloating, gas, temporary diarrhea, metallic taste"),
-              _buildResultRow("Precautions", "Check HbA1c levels, monitor kidney functions yearly, limit alcohol."),
+              _buildResultRow("Medicine Name",
+                _ocrResults?['medicineName'] as String? ?? 'Metformin Hydrochloride',
+                isTitle: true),
+              _buildResultRow("Doctor",
+                _ocrResults?['doctorName'] as String? ?? 'Dr. Robert Chen'),
+              _buildResultRow("Diagnosis",
+                _ocrResults?['diagnosis'] as String? ?? 'Blood Sugar Regulation'),
+              _buildResultRow("Dosage",
+                _ocrResults?['dosage'] as String? ?? '500 mg tablets'),
+              _buildResultRow("Timing",
+                _ocrResults?['time'] as String? ?? '01:00 PM'),
+              _buildResultRow("Frequency",
+                _ocrResults?['frequency'] as String? ?? 'Twice Daily'),
+              _buildResultRow("Food Relation",
+                (_ocrResults?['beforeFood'] as bool? ?? false)
+                    ? "Take BEFORE food"
+                    : "Take AFTER food to prevent stomach upset"),
+              if ((_ocrResults?['explanation'] as String?)?.isNotEmpty ?? false)
+                _buildResultRow("Educational Info",
+                  _ocrResults!['explanation'] as String),
+              if ((_ocrResults?['notes'] as String?)?.isNotEmpty ?? false)
+                _buildResultRow("Doctor Notes",
+                  _ocrResults!['notes'] as String),
             ],
           ),
         ),

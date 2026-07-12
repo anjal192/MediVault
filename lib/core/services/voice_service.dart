@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'repository.dart';
 
 class VoiceService extends ChangeNotifier {
   final FlutterTts _flutterTts = FlutterTts();
+
 
   // TTS Parameters
   double volume = 0.8; // 0.0 to 1.0
@@ -67,7 +69,8 @@ class VoiceService extends ChangeNotifier {
 
   // Speak medication text out loud
   Future<void> speakMedicationReminder(String medicineName, String dosage, String instructions) async {
-    final text = "Time to take your medication: $medicineName. Dosage is $dosage, $instructions.";
+    final name = MediVaultRepository().userName;
+    final text = "Hello $name, it is time to take your medicine: $medicineName. Dosage is $dosage, $instructions.";
     await speak(text);
   }
 

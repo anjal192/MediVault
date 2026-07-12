@@ -192,7 +192,8 @@ class _MedicineReminderScreenState extends State<MedicineReminderScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: () {
-                _voiceService.speak("This is a test of the MediVault Smart Voice assistant reminder.");
+                final name = _repository.userName;
+                _voiceService.speak("Hello $name, this is a test of the MediVault Smart Voice assistant reminder.");
               },
               icon: Icon(
                 _voiceService.isSpeaking ? Icons.record_voice_over : Icons.play_arrow_rounded,

@@ -2,6 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/gradient_background.dart';
+import '../../services/firebase_auth_service.dart';
+import '../../services/local_notification_service.dart';
+import '../../core/services/repository.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -35,8 +38,21 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _controller.forward();
 
-    Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, '/login');
+    Timer(const Duration(seconds: 3), () async {
+      // Request local notifications initializers
+      await LocalNotificationService().init();
+      await LocalNotificationService().requestPermissions();
+
+      if (FirebaseAuthService().isLoggedIn) {
+        await MediVaultRepository().syncFromFirebase();
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/dashboard');
+        }
+      } else {
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/login');
+        }
+      }
     });
   }
 
