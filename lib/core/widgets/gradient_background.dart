@@ -13,11 +13,13 @@ enum BackgroundStyle {
 class GradientBackground extends StatelessWidget {
   final Widget child;
   final BackgroundStyle style;
+  final String? backgroundImage;
 
   const GradientBackground({
     Key? key,
     required this.child,
     this.style = BackgroundStyle.glowingOrbs,
+    this.backgroundImage,
   }) : super(key: key);
 
   @override
@@ -26,17 +28,28 @@ class GradientBackground extends StatelessWidget {
     
     return Stack(
       children: [
-        // Base Theme-appropriate background color
+        // Unified medium-dark marine blue gradient — same across ALL pages
         Container(
-          color: isDark ? AppTheme.backgroundDark : AppTheme.backgroundLight,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF091A30), // Deep marine blue
+                Color(0xFF0E2040), // Mid marine blue
+                Color(0xFF162B50), // Lighter marine blue (right-bottom)
+              ],
+              stops: [0.0, 0.5, 1.0],
+            ),
+          ),
         ),
         
         // Background Image Asset
         Positioned.fill(
           child: Opacity(
-            opacity: isDark ? 0.07 : 0.03, // Subtle blending for readability
+            opacity: backgroundImage != null ? 0.30 : (isDark ? 0.07 : 0.03), // 20-30% opacity for stethoscope / premium assets
             child: Image.asset(
-              'assets/images/medical_background.png',
+              backgroundImage ?? 'assets/images/medical_background.png',
               fit: BoxFit.cover,
             ),
           ),
@@ -112,7 +125,7 @@ class BackgroundPainter extends CustomPainter {
     _drawOrbs(canvas, size, paint, primary, secondary);
     
     final linePaint = Paint()
-      ..color = (isDark ? AppTheme.textSecondaryDark : AppTheme.textSecondaryLight).withAlpha(12)
+      ..color = const Color(0xFF38BDF8).withOpacity(0.20)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
@@ -138,7 +151,7 @@ class BackgroundPainter extends CustomPainter {
     _drawOrbs(canvas, size, paint, primary, secondary);
 
     final pulsePaint = Paint()
-      ..color = AppTheme.accentBlue.withAlpha(isDark ? 45 : 30)
+      ..color = const Color(0xFF38BDF8).withOpacity(0.25)
       ..strokeWidth = 3.0
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round

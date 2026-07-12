@@ -36,7 +36,7 @@ class MediVaultApp extends StatelessWidget {
       themeMode: ThemeMode.system, // respects device preferences
       
       // Initial Entry Page
-      initialRoute: '/',
+      initialRoute: '/login', // temp: skip splash for direct testing
       
       // App Routing Map
       routes: {

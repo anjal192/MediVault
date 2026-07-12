@@ -23,3 +23,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/medical_background.png
+    - assets/images/stethoscope_bg.png
+    - assets/images/stethoscope_light_bg.png
